@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -35,23 +35,7 @@ type Hand struct {
 	cards [5]int
 }
 
-type Hands []*Hand
-
-func (h Hands) Len() int      { return len(h) }
-func (h Hands) Swap(a, b int) { h[a], h[b] = h[b], h[a] }
-func (h Hands) Less(a, b int) bool {
-
-	for i := 0; i < 5; i++ {
-		if h[a].cards[i] == h[b].cards[i] {
-			continue
-		}
-		return h[a].cards[i] < h[b].cards[i]
-	}
-
-	return false
-}
-
-var types = [7]Hands{}
+var types = [7][]*Hand{}
 
 func add(_type Type, hand *Hand) {
 	types[_type] = append(types[_type], hand)
@@ -149,7 +133,17 @@ func main() {
 			continue
 		}
 
-		sort.Sort(_type)
+		slices.SortFunc(_type, func(a, b *Hand) int {
+			for i := 0; i < 5; i++ {
+				if a.cards[i] == b.cards[i] {
+					continue
+				}
+
+				return a.cards[i] - b.cards[i]
+			}
+
+			return -1
+		})
 
 		for _, hand := range _type {
 			winnings += hand.bid * rank
